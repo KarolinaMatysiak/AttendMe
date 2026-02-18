@@ -27,28 +27,28 @@ const router = createRouter({
         },
       ],
     },
-    // {
-    //   path: '/teacher',
-    //   component: MainAppLayout,
-    //   meta: { requiresAuth: true, roles: ['teacher'] } satisfies RouteMetaAccess,
-    //   children: [
-    //     {
-    //       path: 'dashboard',
-    //       name: 'teacher-dashboard',
-    //       component: () => import('../pages/teacher/TeacherDashboardPage.vue'),
-    //     },
-    //     {
-    //       path: 'sessions/:sessionId',
-    //       name: 'teacher-session-details',
-    //       component: () => import('../pages/teacher/TeacherSessionDetailsPage.vue'),
-    //     },
-    //     {
-    //       path: 'sessions/:sessionId/scanner',
-    //       name: 'teacher-session-scanner',
-    //       component: () => import('../pages/teacher/TeacherScannerPage.vue'),
-    //     },
-    //   ],
-    // },
+    {
+      path: '/teacher',
+      component: MainAppLayout,
+      meta: { requiresAuth: true, roles: ['teacher'] } satisfies RouteMetaAccess,
+      children: [
+        {
+          path: 'dashboard',
+          name: 'teacher-dashboard',
+          component: () => import('../pages/teacher/TeacherDashboardPage.vue'),
+        },
+        // {
+        //   path: 'sessions/:sessionId',
+        //   name: 'teacher-session-details',
+        //   component: () => import('../pages/teacher/TeacherSessionDetailsPage.vue'),
+        // },
+        // {
+        //   path: 'sessions/:sessionId/scanner',
+        //   name: 'teacher-session-scanner',
+        //   component: () => import('../pages/teacher/TeacherScannerPage.vue'),
+        // },
+      ],
+    },
     // {
     //   path: '/student',
     //   component: MainAppLayout,
