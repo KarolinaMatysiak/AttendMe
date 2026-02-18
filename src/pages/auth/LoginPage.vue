@@ -22,7 +22,14 @@ function targetByRole(role: 'teacher' | 'student' | null) {
 
 async function onSubmit() {
   try {
+    auth.error = null
+
     await auth.login(loginName.value.trim(), password.value)
+
+    console.log('auth.user:', auth.user)
+    console.log('auth.role:', auth.role)
+    console.log('auth.isAuthenticated:', auth.isAuthenticated)
+    console.log('token exists:', !!auth.backend.userTokenResult?.token)
 
     const redirect = route.query.redirect
     if (typeof redirect === 'string' && redirect.length > 0) {
@@ -30,11 +37,15 @@ async function onSubmit() {
       return
     }
 
-    await router.push(targetByRole(auth.role))
-  } catch {
-    // error message is already in auth.error
+    // tymczasowo na etap dnia 2
+    await router.push({ name: 'teacher-dashboard' })
+  } catch (e: any) {
+    console.error('LOGIN ERROR:', e)
+    console.error('LOGIN ERROR DETAIL:', e?.detail)
+    console.error('STORE ERROR:', auth.error)
   }
 }
+
 </script>
 
 <template>
