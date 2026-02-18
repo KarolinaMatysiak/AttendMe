@@ -37,16 +37,16 @@ const router = createRouter({
           name: 'teacher-dashboard',
           component: () => import('../pages/teacher/TeacherDashboardPage.vue'),
         },
-        // {
-        //   path: 'sessions/:sessionId',
-        //   name: 'teacher-session-details',
-        //   component: () => import('../pages/teacher/TeacherSessionDetailsPage.vue'),
-        // },
-        // {
-        //   path: 'sessions/:sessionId/scanner',
-        //   name: 'teacher-session-scanner',
-        //   component: () => import('../pages/teacher/TeacherScannerPage.vue'),
-        // },
+        {
+          path: 'sessions/:sessionId',
+          name: 'teacher-details',
+          component: () => import('../pages/teacher/TeacherDetailsPage.vue'),
+        },
+        {
+          path: 'sessions/:sessionId/scanner',
+          name: 'teacher-session-scanner',
+          component: () => import('../pages/teacher/TeacherScannerPage.vue'),
+        },
       ],
     },
     // {
@@ -71,11 +71,11 @@ const router = createRouter({
     //     },
     //   ],
     // },
-    // {
-    //   path: '/device/register/:token',
-    //   name: 'device-register',
-    //   component: () => import('../pages/student/DeviceRegisterPage.vue'),
-    // },
+    {
+      path: '/device/register/:token',
+      name: 'device-register',
+      component: () => import('../pages/student/DeviceRegisterPage.vue'),
+    },
     // {
     //   path: '/',
     //   redirect: '/auth/login',

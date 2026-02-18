@@ -113,7 +113,7 @@ function scheduleReload() {
 
 function openDetails(sessionId?: number) {
   if (!sessionId) return
-  router.push({ name: 'teacher-session-details', params: { sessionId: String(sessionId) } })
+  router.push({ name: 'teacher-details', params: { sessionId: String(sessionId) } })
 }
 
 watch([dateFilter, search], scheduleReload)
