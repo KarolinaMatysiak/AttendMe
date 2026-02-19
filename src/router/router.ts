@@ -49,28 +49,28 @@ const router = createRouter({
         },
       ],
     },
-    // {
-    //   path: '/student',
-    //   component: MainAppLayout,
-    //   meta: { requiresAuth: true, roles: ['student'] } satisfies RouteMetaAccess,
-    //   children: [
-    //     {
-    //       path: 'dashboard',
-    //       name: 'student-dashboard',
-    //       component: () => import('../pages/student/StudentDashboardPage.vue'),
-    //     },
-    //     {
-    //       path: 'sessions/:sessionId',
-    //       name: 'student-session-details',
-    //       component: () => import('../pages/student/StudentSessionDetailsPage.vue'),
-    //     },
-    //     {
-    //       path: 'attendance/register',
-    //       name: 'student-attendance-register',
-    //       component: () => import('../pages/student/StudentAttendanceRegisterPage.vue'),
-    //     },
-    //   ],
-    // },
+    {
+      path: '/student',
+      component: MainAppLayout,
+      meta: { requiresAuth: true, roles: ['student'] } satisfies RouteMetaAccess,
+      children: [
+        {
+          path: 'dashboard',
+          name: 'student-dashboard',
+          component: () => import('../pages/student/StudentDashboardPage.vue'),
+        },
+        {
+          path: 'sessions/:sessionId',
+          name: 'student-session-details',
+          component: () => import('../pages/student/StudentDetailsPage.vue'),
+        },
+        {
+          path: 'attendance/register',
+          name: 'student-attendance-register',
+          component: () => import('../pages/student/StudentAttendanceRegisterPage.vue'),
+        },
+      ],
+    },
     {
       path: '/device/register/:token',
       name: 'device-register',

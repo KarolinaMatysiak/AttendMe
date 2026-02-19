@@ -17,8 +17,14 @@ const error = ref('')
 const success = ref('')
 
 function onAlbumInput(event: Event) {
-  const value = (event.target as HTMLInputElement).value
-  albumIdNumber.value = value ? Number(value) : null
+  const raw = (event.target as HTMLInputElement).value
+  if (!raw) {
+    albumIdNumber.value = null
+    return
+  }
+
+  const n = Number(raw)
+  albumIdNumber.value = Number.isFinite(n) && n > 0 ? Math.floor(n) : null
 }
 
 function goBack() {
@@ -28,6 +34,31 @@ function goBack() {
   }
   router.push('/auth/login')
 }
+
+function validateForm() {
+  if (!deviceName.value.trim()) {
+    error.value = 'Pole "Nazwa urządzenia" jest wymagane.'
+    return false
+  }
+
+  if (!studentName.value.trim()) {
+    error.value = 'Pole "Imię" jest wymagane.'
+    return false
+  }
+
+  if (!studentSurname.value.trim()) {
+    error.value = 'Pole "Nazwisko" jest wymagane.'
+    return false
+  }
+
+  if (albumIdNumber.value === null || albumIdNumber.value <= 0) {
+    error.value = 'Pole "Nr albumu" jest wymagane.'
+    return false
+  }
+
+  return true
+}
+
 
 async function submit() {
   const token = String(route.params.token ?? '')
@@ -39,6 +70,10 @@ async function submit() {
   isLoading.value = true
   error.value = ''
   success.value = ''
+  
+  if (!validateForm()) {
+  return
+  }
 
   try {
     await auth.backend.userDeviceRegisterWithToken(token, {
@@ -50,32 +85,78 @@ async function submit() {
 
     success.value = 'Urządzenie zostało zarejestrowane poprawnie.'
   } catch (e: any) {
-    error.value = e?.detail ?? e?.message ?? 'Nie udało się zarejestrować urządzenia.'
+    console.log(JSON.parse(JSON.stringify(e, null, 2)))
+    const errorType = e?.type ?? JSON.parse(e?.response ?? '{}').type ?? '';
+
+    if (errorType === 'device_user_data_mismatch') {
+      error.value = 'Błędne dane studenta.'
+    } else if (errorType === 'device_already_registered') {
+      error.value = 'Urządzenie jest już zarejestrowane. Przed zarejestrowaniem nowego urządzenia, nauczyciel musi zresetować stare urządzenie.'
+    } else {
+      error.value = 'Nie udało się zarejestrować urządzenia.'
+    }
   } finally {
     isLoading.value = false
   }
 }
+
 </script>
 
 <template>
   <section class="device-register">
-    <button class="back-btn" @click="goBack">Wróć</button>
     <h1>Rejestracja urządzenia</h1>
 
-    <label>Nazwa urządzenia <input v-model="deviceName" type="text" /></label>
-    <label>Imię <input v-model="studentName" type="text" /></label>
-    <label>Nazwisko <input v-model="studentSurname" type="text" /></label>
     <label>
-      Nr albumu
-      <input :value="albumIdNumber ?? ''" type="number" @input="onAlbumInput" />
+      Nazwa urządzenia
+      <input v-model="deviceName" type="text" />
     </label>
 
-    <button :disabled="isLoading" @click="submit">
-      {{ isLoading ? 'Rejestrowanie...' : 'Zarejestruj urządzenie' }}
-    </button>
+    <label>
+      Imię
+      <input
+        v-model="studentName"
+        type="text"
+        @input="studentName = studentName ? studentName.charAt(0).toUpperCase() + studentName.slice(1).toLowerCase() : ''"
+      />
+    </label>
+
+    <label>
+      Pierwsza litera nazwiska
+      <input
+        v-model="studentSurname"
+        type="text"
+        maxlength="1"
+        @input="studentSurname = studentSurname ? studentSurname.toUpperCase() : ''"
+      />
+    </label>
+
+    <label>
+      Nr albumu
+      <input
+        :value="albumIdNumber ?? ''"
+        type="number"
+        min="1"
+        step="1"
+        @input="onAlbumInput"
+      />
+    </label>
+
+   <button
+  :disabled="
+    isLoading ||
+    !deviceName.trim() ||
+    !studentName.trim() ||
+    !studentSurname.trim() ||
+    albumIdNumber === null
+  "
+  @click="submit"
+>
+  {{ isLoading ? 'Rejestrowanie...' : 'Zarejestruj urządzenie' }}
+</button>
 
     <p v-if="success" class="ok">{{ success }}</p>
     <p v-if="error" class="err">{{ error }}</p>
+
   </section>
 </template>
 
@@ -87,10 +168,37 @@ async function submit() {
   gap: 10px;
   padding: 0 16px;
 }
-.back-btn { justify-self: start; }
-label { display: grid; gap: 6px; }
-input { height: 38px; border: 1px solid #d1d5db; border-radius: 8px; padding: 0 10px; }
-button { height: 40px; border: 0; border-radius: 8px; background: #2563eb; color: #fff; cursor: pointer; }
-.ok { color: #0f766e; }
-.err { color: #b91c1c; }
+
+.back-btn {
+  justify-self: start;
+}
+
+label {
+  display: grid;
+  gap: 6px;
+}
+
+input {
+  height: 38px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 0 10px;
+}
+
+button {
+  height: 40px;
+  border: 0;
+  border-radius: 8px;
+  background: #2563eb;
+  color: #fff;
+  cursor: pointer;
+}
+
+.ok {
+  color: #0f766e;
+}
+
+.err {
+  color: #b91c1c;
+}
 </style>

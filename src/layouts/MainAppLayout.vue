@@ -16,6 +16,13 @@ const initials = computed(() => {
   return `${first}${second}` || 'U'
 })
 
+const roleLabel = computed(() => {
+  if (auth.role === 'student') return 'Student'
+  if (auth.role === 'teacher') return 'Nauczyciel'
+  return 'Użytkownik'
+})
+
+
 const fullName = computed(() => {
   const name = auth.user?.name ?? ''
   const surname = auth.user?.surname ?? ''
@@ -45,7 +52,7 @@ async function logout() {
 
         <div v-if="isMenuOpen" class="menu">
           <p class="name">{{ fullName }}</p>
-          <p class="role">Rola: Nauczyciel</p>
+          <p class="role">{{ roleLabel }}</p>
           <button class="logout-btn" @click="logout" type="button">Wyloguj</button>
         </div>
       </div>

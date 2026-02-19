@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 import type {
@@ -21,6 +21,15 @@ const dateFilter = ref<DateFilter>('month')
 const search = ref('')
 
 let debounceTimer: number | undefined
+
+const sortedSessions = computed(() => {
+  return [...sessions.value].sort((a, b) => {
+    const aTime = a.dateStart ? new Date(a.dateStart).getTime() : 0
+    const bTime = b.dateStart ? new Date(b.dateStart).getTime() : 0
+    return bTime - aTime
+  })
+})
+
 
 function startOfDay(date = new Date()) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate())
@@ -87,7 +96,7 @@ async function loadSessions() {
   try {
     const range = getDateRange(dateFilter.value)
 
-    const result: CourseSessionListItemPagedList = await auth.backend.courseTeacherSessionsGet({
+    const result: CourseSessionListItemPagedList = await auth.backend.courseStudentSessionsGet({
       pageNumber: 1,
       pageSize: 999999,
       filters: {
@@ -96,11 +105,7 @@ async function loadSessions() {
       },
     })
 
-    sessions.value = [...(result.items ?? [])].sort((a, b) => {
-      const aTime = a.dateStart ? new Date(a.dateStart).getTime() : 0
-      const bTime = b.dateStart ? new Date(b.dateStart).getTime() : 0
-      return bTime - aTime
-    })
+    sessions.value = result.items ?? []
   } catch (e: any) {
     error.value = e?.detail ?? e?.message ?? 'Nie udało się pobrać listy zajęć.'
     sessions.value = []
@@ -118,7 +123,7 @@ function scheduleReload() {
 
 function openDetails(sessionId?: number) {
   if (!sessionId) return
-  router.push({ name: 'teacher-details', params: { sessionId: String(sessionId) } })
+  router.push({ name: 'student-session-details', params: { sessionId: String(sessionId) } })
 }
 
 watch([dateFilter, search], scheduleReload)
@@ -127,7 +132,7 @@ onMounted(loadSessions)
 </script>
 
 <template>
-  <section class="teacher-dashboard">
+  <section class="student-dashboard">
     <div class="search-bar">
       <select v-model="dateFilter">
         <option value="today">Dzisiaj</option>
@@ -147,11 +152,11 @@ onMounted(loadSessions)
 
     <p v-if="error" class="error">{{ error }}</p>
     <p v-else-if="isLoading">Ładowanie...</p>
-    <p v-else-if="sessions.length === 0">Brak zajęć.</p>
+    <p v-else-if="sessions.length === 0">Brak zajęć dla wybranych filtrów.</p>
 
     <ul v-else class="session-list">
       <li
-        v-for="item in sessions"
+        v-for="item in sortedSessions"
         :key="item.courseSessionId"
         class="session-item"
         @click="openDetails(item.courseSessionId)"
@@ -170,8 +175,24 @@ onMounted(loadSessions)
 </template>
 
 <style scoped>
-.teacher-dashboard {
+.student-dashboard {
   padding: 8px 0;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.btn-primary {
+  height: 38px;
+  border-radius: 6px;
+  border: 1px solid #1d4ed8;
+  padding: 0 12px;
+  background: #2563eb;
+  color: #fff;
+  cursor: pointer;
 }
 
 .search-bar {
@@ -231,6 +252,14 @@ onMounted(loadSessions)
 }
 
 @media (max-width: 900px) {
+  .toolbar {
+    justify-content: stretch;
+  }
+
+  .toolbar .btn-primary {
+    width: 100%;
+  }
+
   .search-bar {
     grid-template-columns: 1fr;
   }
