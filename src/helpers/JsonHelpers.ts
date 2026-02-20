@@ -7,7 +7,7 @@ const DATE_PATTERN =
  * @param {string} key - the serialized property key.
  * @param {object} value - the serialized proprty value.
  */
-export function dateReviver(key: string, value: unknown) {
+export function dateReviver(_key: string, value: unknown) {
   if (typeof value === 'string' && DATE_PATTERN.test(value)) {
     return new Date(value)
   }

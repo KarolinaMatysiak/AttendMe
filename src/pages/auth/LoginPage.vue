@@ -26,23 +26,29 @@ async function onSubmit() {
 
     await auth.login(loginName.value.trim(), password.value)
 
-    console.log('auth.user:', auth.user)
-    console.log('auth.role:', auth.role)
-    console.log('auth.isAuthenticated:', auth.isAuthenticated)
-    console.log('token exists:', !!auth.backend.userTokenResult?.token)
-
     const redirect = route.query.redirect
     if (typeof redirect === 'string' && redirect.length > 0) {
       await router.push(redirect)
       return
     }
 
-    // tymczasowo na etap dnia 2
-    await router.push({ name: 'teacher-dashboard' })
+   await router.push(targetByRole(auth.role))
   } catch (e: any) {
-    console.error('LOGIN ERROR:', e)
-    console.error('LOGIN ERROR DETAIL:', e?.detail)
-    console.error('STORE ERROR:', auth.error)
+    const errorType = String(e?.type ?? '').toLowerCase()
+    const status = Number(e?.status ?? 0)
+    const detail = String(e?.detail ?? '').toLowerCase()
+
+    if (errorType === 'invalid_login_credentials' || status === 401) {
+      auth.error = 'Nieprawidłowy login lub hasło.'
+      return
+    }
+
+    if (detail.includes('forbidden') || status === 403) {
+      auth.error = 'Brak dostępu dla tego konta.'
+      return
+    }
+
+    auth.error = 'Nie udało się zalogować. Spróbuj ponownie.'
   }
 }
 

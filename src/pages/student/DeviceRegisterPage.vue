@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 
 const route = useRoute()
-const router = useRouter()
 const auth = useAuthStore()
 
 const deviceName = ref('')
@@ -25,14 +24,6 @@ function onAlbumInput(event: Event) {
 
   const n = Number(raw)
   albumIdNumber.value = Number.isFinite(n) && n > 0 ? Math.floor(n) : null
-}
-
-function goBack() {
-  if (window.history.length > 1) {
-    router.back()
-    return
-  }
-  router.push('/auth/login')
 }
 
 function validateForm() {
@@ -91,7 +82,7 @@ async function submit() {
     if (errorType === 'device_user_data_mismatch') {
       error.value = 'Błędne dane studenta.'
     } else if (errorType === 'device_already_registered') {
-      error.value = 'Urządzenie jest już zarejestrowane. Przed zarejestrowaniem nowego urządzenia, nauczyciel musi zresetować stare urządzenie.'
+      error.value = 'Urządzenie jest już zarejestrowane. Poproś nauczyciela o reset.'
     } else {
       error.value = 'Nie udało się zarejestrować urządzenia.'
     }

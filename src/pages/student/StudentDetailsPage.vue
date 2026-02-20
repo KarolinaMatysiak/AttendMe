@@ -97,7 +97,6 @@ async function loadData() {
   error.value = null
 
   try {
-    // student endpoint (bez forbidden)
     const list: CourseSessionListItemPagedList = await auth.backend.courseStudentSessionsGet({
       pageNumber: 1,
       pageSize: 999999,
@@ -143,7 +142,7 @@ onMounted(loadData)
 
 <template>
   <section class="student-details">
-    <button class="btn-secondary back-btn" @click="goBack">Wróć do listy</button>
+    <button class="btn-secondary back-btn" @click="goBack">Wróć</button>
 
     <p v-if="error" class="error">{{ error }}</p>
     <p v-else-if="isLoading" class="muted">Ładowanie...</p>

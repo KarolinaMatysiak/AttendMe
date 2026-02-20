@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
+import SessionsFilterBar from '../../components/SessionsFilterBar.vue'
 import type {
   CourseSessionListFilters,
   CourseSessionListItem,
@@ -21,15 +22,6 @@ const dateFilter = ref<DateFilter>('month')
 const search = ref('')
 
 let debounceTimer: number | undefined
-
-const sortedSessions = computed(() => {
-  return [...sessions.value].sort((a, b) => {
-    const aTime = a.dateStart ? new Date(a.dateStart).getTime() : 0
-    const bTime = b.dateStart ? new Date(b.dateStart).getTime() : 0
-    return bTime - aTime
-  })
-})
-
 
 function startOfDay(date = new Date()) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate())
@@ -107,7 +99,7 @@ async function loadSessions() {
 
     sessions.value = result.items ?? []
   } catch (e: any) {
-    error.value = e?.detail ?? e?.message ?? 'Nie udało się pobrać listy zajęć.'
+    error.value = e?.detail ?? e?.message ?? 'Nie udalo sie pobrac listy zajec.'
     sessions.value = []
   } finally {
     isLoading.value = false
@@ -133,30 +125,20 @@ onMounted(loadSessions)
 
 <template>
   <section class="student-dashboard">
-    <div class="search-bar">
-      <select v-model="dateFilter">
-        <option value="today">Dzisiaj</option>
-        <option value="week">Bieżący tydzień</option>
-        <option value="month">Bieżący miesiąc</option>
-        <option value="future">Przyszłe</option>
-        <option value="past">Minione</option>
-        <option value="all">Wszystkie</option>
-      </select>
-
-      <input
-        v-model="search"
-        type="text"
-        placeholder="Szukaj: przedmiot, grupa, lokalizacja..."
-      />
-    </div>
+    <SessionsFilterBar
+      :date-filter="dateFilter"
+      :search="search"
+      @update:date-filter="dateFilter = $event"
+      @update:search="search = $event"
+    />
 
     <p v-if="error" class="error">{{ error }}</p>
-    <p v-else-if="isLoading">Ładowanie...</p>
-    <p v-else-if="sessions.length === 0">Brak zajęć dla wybranych filtrów.</p>
+    <p v-else-if="isLoading">Ladowanie...</p>
+    <p v-else-if="sessions.length === 0">Brak zajec dla wybranych filtrow.</p>
 
     <ul v-else class="session-list">
       <li
-        v-for="item in sortedSessions"
+        v-for="item in sessions"
         :key="item.courseSessionId"
         class="session-item"
         @click="openDetails(item.courseSessionId)"
@@ -177,40 +159,6 @@ onMounted(loadSessions)
 <style scoped>
 .student-dashboard {
   padding: 8px 0;
-}
-
-.toolbar {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 12px;
-}
-
-.btn-primary {
-  height: 38px;
-  border-radius: 6px;
-  border: 1px solid #1d4ed8;
-  padding: 0 12px;
-  background: #2563eb;
-  color: #fff;
-  cursor: pointer;
-}
-
-.search-bar {
-  display: grid;
-  grid-template-columns: 260px minmax(420px, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
-  align-items: center;
-}
-
-.search-bar select,
-.search-bar input {
-  height: 42px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 0 12px;
-  background: #fff;
-  font-size: 15px;
 }
 
 .session-list {
@@ -252,18 +200,6 @@ onMounted(loadSessions)
 }
 
 @media (max-width: 900px) {
-  .toolbar {
-    justify-content: stretch;
-  }
-
-  .toolbar .btn-primary {
-    width: 100%;
-  }
-
-  .search-bar {
-    grid-template-columns: 1fr;
-  }
-
   .line1,
   .line2 {
     grid-template-columns: 1fr;

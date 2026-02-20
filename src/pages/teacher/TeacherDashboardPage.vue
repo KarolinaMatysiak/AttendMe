@@ -2,6 +2,7 @@
 import { onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
+import SessionsFilterBar from '../../components/SessionsFilterBar.vue'
 import type {
   CourseSessionListFilters,
   CourseSessionListItem,
@@ -96,13 +97,9 @@ async function loadSessions() {
       },
     })
 
-    sessions.value = [...(result.items ?? [])].sort((a, b) => {
-      const aTime = a.dateStart ? new Date(a.dateStart).getTime() : 0
-      const bTime = b.dateStart ? new Date(b.dateStart).getTime() : 0
-      return bTime - aTime
-    })
+    sessions.value = result.items ?? []
   } catch (e: any) {
-    error.value = e?.detail ?? e?.message ?? 'Nie udało się pobrać listy zajęć.'
+    error.value = e?.detail ?? e?.message ?? 'Nie udalo sie pobrac listy zajec.'
     sessions.value = []
   } finally {
     isLoading.value = false
@@ -128,26 +125,16 @@ onMounted(loadSessions)
 
 <template>
   <section class="teacher-dashboard">
-    <div class="search-bar">
-      <select v-model="dateFilter">
-        <option value="today">Dzisiaj</option>
-        <option value="week">Bieżący tydzień</option>
-        <option value="month">Bieżący miesiąc</option>
-        <option value="future">Przyszłe</option>
-        <option value="past">Minione</option>
-        <option value="all">Wszystkie</option>
-      </select>
-
-      <input
-        v-model="search"
-        type="text"
-        placeholder="Szukaj: przedmiot, grupa, lokalizacja..."
-      />
-    </div>
+    <SessionsFilterBar
+      :date-filter="dateFilter"
+      :search="search"
+      @update:date-filter="dateFilter = $event"
+      @update:search="search = $event"
+    />
 
     <p v-if="error" class="error">{{ error }}</p>
-    <p v-else-if="isLoading">Ładowanie...</p>
-    <p v-else-if="sessions.length === 0">Brak zajęć.</p>
+    <p v-else-if="isLoading">Ladowanie...</p>
+    <p v-else-if="sessions.length === 0">Brak zajec.</p>
 
     <ul v-else class="session-list">
       <li
@@ -172,24 +159,6 @@ onMounted(loadSessions)
 <style scoped>
 .teacher-dashboard {
   padding: 8px 0;
-}
-
-.search-bar {
-  display: grid;
-  grid-template-columns: 260px minmax(420px, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
-  align-items: center;
-}
-
-.search-bar select,
-.search-bar input {
-  height: 42px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 0 12px;
-  background: #fff;
-  font-size: 15px;
 }
 
 .session-list {
@@ -231,10 +200,6 @@ onMounted(loadSessions)
 }
 
 @media (max-width: 900px) {
-  .search-bar {
-    grid-template-columns: 1fr;
-  }
-
   .line1,
   .line2 {
     grid-template-columns: 1fr;

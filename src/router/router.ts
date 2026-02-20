@@ -76,14 +76,14 @@ const router = createRouter({
       name: 'device-register',
       component: () => import('../pages/student/DeviceRegisterPage.vue'),
     },
-    // {
-    //   path: '/',
-    //   redirect: '/auth/login',
-    // },
-    // {
-    //   path: '/:pathMatch(.*)*',
-    //   redirect: '/auth/login',
-    // },
+    {
+      path: '/',
+      redirect: '/auth/login',
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/auth/login',
+    },
   ],
 })
 

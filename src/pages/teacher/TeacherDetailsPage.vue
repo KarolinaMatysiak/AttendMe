@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import QrcodeVue from 'qrcode.vue'
 import { useAuthStore } from '../../stores/auth'
@@ -31,6 +31,7 @@ const scannerToken = ref('')
 const isDeviceModalOpen = ref(false)
 const isDeviceLoading = ref(false)
 const deviceRows = ref<DeviceModalRow[]>([])
+let attendanceRefreshTimer: number | undefined
 
 const dateFormatter = new Intl.DateTimeFormat('pl-PL', {
   year: 'numeric',
@@ -88,6 +89,15 @@ async function toggleAttendance(row: CourseSessionAttendanceRecord) {
     error.value = e?.detail ?? e?.message ?? 'Nie udało się zmienić obecności.'
   } finally {
     isToggling.value = false
+  }
+}
+
+async function refreshAttendance() {
+  error.value = null
+  try {
+    attendanceRows.value = await auth.backend.courseSessionAttendanceListGet(sessionId.value)
+  } catch (e: any) {
+    error.value = e?.detail ?? e?.message ?? 'Nie udało się odświeżyć listy obecności.'
   }
 }
 
@@ -186,17 +196,29 @@ async function resetDevice(userId: number) {
   }
 }
 
-onMounted(loadData)
+onMounted(async () => {
+  await loadData()
+  attendanceRefreshTimer = window.setInterval(() => {
+    refreshAttendance()
+  }, 5000)
+})
+
+onUnmounted(() => {
+  if (attendanceRefreshTimer) {
+    window.clearInterval(attendanceRefreshTimer)
+  }
+})
 </script>
 
 <template>
   <section class="teacher-details">
-    <button class="btn-secondary back-btn" @click="goToDashboard">Wróć do dashboardu</button>
+    <button class="btn-secondary back-btn" @click="goToDashboard">Wróć</button>
     <p v-if="error" class="error">{{ error }}</p>
 
     <div class="top-section">
       <div class="session-meta">
         <h1>{{ sessionData?.courseName || '-' }}</h1>
+        <p><strong>Grupa</strong> {{ sessionData?.courseGroupName || '-' }}</p>
         <p><strong>Termin</strong> {{ formatDate(sessionData?.dateStart) }}</p>
         <p><strong>Godziny</strong> {{ formatTimeRange(sessionData?.dateStart, sessionData?.dateEnd) }}</p>
         <p><strong>Lokalizacja</strong> {{ sessionData?.locationName || '-' }}</p>
@@ -206,6 +228,12 @@ onMounted(loadData)
         <button class="btn-primary" @click="openScannerModal">Skaner obecności</button>
         <button class="btn-secondary" @click="openDeviceModal">Rejestracja urządzenia</button>
       </div>
+    </div>
+
+    <div class="table-actions">
+      <button class="btn-secondary" :disabled="isLoading || isToggling" @click="refreshAttendance">
+        Odśwież
+      </button>
     </div>
 
     <div class="table-wrap">
@@ -341,6 +369,11 @@ onMounted(loadData)
 .actions-panel {
   display: grid;
   gap: 10px;
+}
+
+.table-actions {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .btn-primary,
