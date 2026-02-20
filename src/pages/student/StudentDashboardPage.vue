@@ -132,6 +132,10 @@ onMounted(loadSessions)
       @update:search="search = $event"
     />
 
+    <div class="toolbar">
+      <button class="btn-secondary" :disabled="isLoading" @click="loadSessions">Odśwież</button>
+    </div>
+
     <p v-if="error" class="error">{{ error }}</p>
     <p v-else-if="isLoading">Ladowanie...</p>
     <p v-else-if="sessions.length === 0">Brak zajec dla wybranych filtrow.</p>
@@ -159,6 +163,23 @@ onMounted(loadSessions)
 <style scoped>
 .student-dashboard {
   padding: 8px 0;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.btn-secondary {
+  height: 38px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 12px;
+  background: #6b7280;
+  color: #fff;
 }
 
 .session-list {

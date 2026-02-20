@@ -97,6 +97,7 @@ async function loadData() {
   error.value = null
 
   try {
+
     const list: CourseSessionListItemPagedList = await auth.backend.courseStudentSessionsGet({
       pageNumber: 1,
       pageSize: 999999,
@@ -142,7 +143,7 @@ onMounted(loadData)
 
 <template>
   <section class="student-details">
-    <button class="btn-secondary back-btn" @click="goBack">Wróć</button>
+    <button class="btn-secondary back-btn" @click="goBack">Wróć do listy</button>
 
     <p v-if="error" class="error">{{ error }}</p>
     <p v-else-if="isLoading" class="muted">Ładowanie...</p>
@@ -151,6 +152,7 @@ onMounted(loadData)
       <div class="top-row">
         <div class="meta">
           <h1>{{ currentSession.courseName || '-' }}</h1>
+          <p><strong>Grupa</strong> {{ currentSession.courseGroupName || '-' }}</p>
           <p><strong>Termin</strong> {{ formatDate(currentSession.dateStart) }}</p>
           <p><strong>Godziny</strong> {{ formatTimeRange(currentSession.dateStart, currentSession.dateEnd) }}</p>
           <p><strong>Lokalizacja</strong> {{ currentSession.locationName || '-' }}</p>
